@@ -1,7 +1,33 @@
+# Grupo 3
+# Nomes: Matheus Foscarini Dias, Enzo Boadas e Mirágini Victória Silveira Malgarizi
+
 from QuadTreeADT import QuadTreeADT
-from Interval2D import Interval2D
-from Point import Point
 from typing import List
+
+class Point:
+  def __init__(self, x: object, y: object) -> None:
+    self.x = x
+    self.y = y
+
+  def __str__(self) -> str:
+    return "({}, {})".format(self.x, self.y)
+
+class Interval:
+  def __init__(self, min: object, max: object) -> None:
+    self.min = min
+    self.max = max
+
+  def contains(self, x: object) -> bool:
+    return self.min <= x <= self.max
+
+class Interval2D:
+  def __init__(self, interval_x: Interval, interval_y: Interval) -> None:
+    self.interval_x = interval_x
+    self.interval_y = interval_y
+    
+  def contains(self, x: object, y: object) -> bool:
+    return self.interval_x.contains(x) and self.interval_y.contains(y)
+
 
 class Node:
   def __init__(self, x: object, y: object, value: object) -> None:
@@ -61,20 +87,43 @@ class QuadTree(QuadTreeADT):
     query_2D(self._root, rect)
 
   def search(self, point: Point) -> object:
-    # TODO
     def search(current: Node, point: Point) -> object:
-      print(current, point)  
+      # if there is no node, just return None
+      if current is None:
+        return None
+
+      # if the current node is the point we are looking for
+      if current.x == point.x and current.y == point.y:
+        return current.value
+
+      # check the quadrant where the point is located
+      if point.x < current.x and point.y >= current.y:
+        return search(current.NW, point)
+      if point.x < current.x and point.y < current.y:
+        return search(current.SW, point)
+      if point.x >= current.x and point.y >= current.y:
+        return search(current.NE, point)
+      if point.x >= current.x and point.y < current.y:
+        return search(current.SE, point)
       
     return search(self._root, point)
 
   def all_points(self) -> List[Point]:
-    # TODO
+    # create a list where we will store all the points
+    points: List[Point] = []
+
     def all_points(current: Node) -> List[Point]:
-      print(current)  
+      # if there is no node, just stop the recursion
+      if current is None:
+        return
+      
+      # add the current point to the list
+      points.append(Point(current.x, current.y))
+      # check all the points in the quadrants
+      all_points(current.NW)
+      all_points(current.SW)
+      all_points(current.NE)
+      all_points(current.SE)
 
-    return all_points(self._root)
-
-if __name__ == "__main__":
-  qt = QuadTree()
-  print(qt.is_empty())
-
+    all_points(self._root)
+    return points
